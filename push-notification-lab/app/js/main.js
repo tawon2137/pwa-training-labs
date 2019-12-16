@@ -15,24 +15,69 @@ limitations under the License.
 */
 const app = (() => {
   'use strict';
+  const applicationServerPublicKey = 'BJrn2JnnmlNVyNX_dw7Wvj0MaaRHpYuUOivJ6pW5JuSrTqVV7i_nmhY-g3mSN7p3HINrCsnGO3yV0r23HCI5ulo';
 
   let isSubscribed = false;
   let swRegistration = null;
-
+  
   const notifyButton = document.querySelector('.js-notify-btn');
   const pushButton = document.querySelector('.js-push-btn');
 
   // TODO 2.1 - check for notification support
-
+  if (!('Notification' in window)) {
+    console.log('This browser does not support notifications!');
+    return;
+  }
   // TODO 2.2 - request permission to show notifications
-
+  Notification.requestPermission(status => {
+    console.log('Notification permission status:', status);
+  });
   function displayNotification() {
 
     // TODO 2.3 - display a Notification
-
+    if (Notification.permission == 'granted') {
+      navigator.serviceWorker.getRegistration().then(reg => {
+    
+        // TODO 2.4 - Add 'options' object to configure the notification
+        const options = {
+          body: 'First notification!',
+          icon: 'images/notification-flat.png',
+          vibrate: [100, 50, 100],
+          data: {
+            dateOfArrival: Date.now(),
+            primaryKey: 1
+          },
+        
+          // TODO 2.5 - add actions to the notification
+          actions: [
+            {action: 'explore', title: 'Go to the site',
+              icon: 'images/checkmark.png'},
+            {action: 'close', title: 'Close the notification',
+              icon: 'images/xmark.png'},
+          ]
+          // TODO 5.1 - add a tag to the notification
+        
+        };
+    
+        reg.showNotification('Hello world!', options);
+      });
+    }
   }
 
   function initializeUI() {
+    // Set the initial subscription value
+    swRegistration.pushManager.getSubscription()
+    .then(function(subscription) {
+      isSubscribed = !(subscription === null);
+
+      if (isSubscribed) {
+        console.log('User IS subscribed.');
+      } else {
+        console.log('User is NOT subscribed.');
+      }
+
+      updateBtn();
+    });
 
     // TODO 3.3b - add a click event listener to the "Enable Push" button
     // and get the subscription object
